@@ -15,8 +15,6 @@ inThisBuild(List(
 ))
 
 lazy val defaultSettings = Defaults.coreDefaultSettings ++ Seq(
-  scalaVersion := "2.12.4",
-
   libraryDependencies ++= Seq(
     "org.slf4j" % "slf4j-api" % "1.7.25",
     "org.slf4j" % "slf4j-log4j12" % "1.7.25" % Test,
