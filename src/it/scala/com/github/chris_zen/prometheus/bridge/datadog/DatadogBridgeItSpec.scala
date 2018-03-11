@@ -2,7 +2,7 @@ package com.github.chris_zen.prometheus.bridge.datadog
 
 import java.time.Duration
 
-import io.prometheus.client.Counter
+import io.prometheus.client.{CollectorRegistry, Counter}
 import org.scalatest.{FlatSpec, Matchers}
 
 
@@ -13,11 +13,13 @@ class DatadogBridgeItSpec extends FlatSpec with Matchers with StatsDFixtures {
   "A DatadogBridge" should "push metrics to Datadog" in {
     withStatsDServer { statsD =>
 
-      val counter = Counter.build("metric2", "help2").labelNames("l1", "l2").register()
+      val registry = new CollectorRegistry()
+      val counter = Counter.build("metric2", "help2").labelNames("l1", "l2").register(registry)
 
       counter.labels("v1", "v2").inc(1.0)
 
-      val config = DatadogBridge.Config(host = "localhost", port = statsD.port, period = PushPeriod)
+      val config = DatadogBridge.Config(host = "localhost", port = statsD.port,
+                                        period = PushPeriod, registry = Some(registry))
       val bridge = DatadogBridge(config)
 
       Thread.sleep(PeriodMarginMillis)
