@@ -46,7 +46,7 @@ class DatadogBridgeSpec extends FlatSpec with Matchers with DatadogBridgeFixture
 
       taskCaptor.getValue.run()
 
-      verify(pusher, times(1)).push(registry)
+      verify(pusher, times(1)).push()
     }
   }
 }

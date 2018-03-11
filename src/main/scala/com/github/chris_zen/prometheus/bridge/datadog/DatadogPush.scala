@@ -1,6 +1,9 @@
 package com.github.chris_zen.prometheus.bridge.datadog
 
-import com.timgroup.statsd.StatsDClient
+import java.util.concurrent.Executors
+
+import com.github.chris_zen.prometheus.bridge.datadog.DatadogBridge.BridgeThreadFactory
+import com.timgroup.statsd.{NonBlockingStatsDClient, StatsDClient}
 import io.prometheus.client.Collector.{MetricFamilySamples, Type}
 import io.prometheus.client.CollectorRegistry
 import org.slf4j.{Logger, LoggerFactory}
@@ -9,9 +12,16 @@ import org.slf4j.{Logger, LoggerFactory}
 object DatadogPush {
 
   private val logger: Logger = LoggerFactory.getLogger(this.getClass.getSimpleName)
+
+  def apply(config: DatadogBridge.Config): DatadogPush = {
+    val client = new NonBlockingStatsDClient(config.prefix, config.host, config.port, config.tags: _*)
+    val registry = config.registry.getOrElse(CollectorRegistry.defaultRegistry)
+    new DatadogPush(client, registry)
+  }
 }
 
-class DatadogPush private[datadog](client: StatsDClient) {
+class DatadogPush private[datadog] (client: StatsDClient,
+                                    registry: CollectorRegistry) {
 
   import DatadogPush.logger
 
@@ -23,7 +33,7 @@ class DatadogPush private[datadog](client: StatsDClient) {
     client.close()
   }
 
-  def push(registry: CollectorRegistry): Unit = {
+  def push(): Unit = {
 
     val unsupportedMetricTypes = for {
       metricFamilySamples    <- registry.metricFamilySamples().asScala.toList

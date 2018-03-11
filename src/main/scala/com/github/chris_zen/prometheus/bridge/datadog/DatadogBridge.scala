@@ -20,8 +20,8 @@ object DatadogBridge {
   case class Config(host: String = DefaultDatadogHost,
                     port: Int = DefaultDatadogPort,
                     prefix: String = DefaultDatadogPrefix,
-                    period: Duration = DefaultPeriod,
                     tags: Seq[String] = Seq.empty,
+                    period: Duration = DefaultPeriod,
                     registry: Option[CollectorRegistry] = None)
 
   private val BridgeThreadFactory = new ThreadFactory {
@@ -32,7 +32,7 @@ object DatadogBridge {
     val client = new NonBlockingStatsDClient(config.prefix, config.host, config.port, config.tags: _*)
     val scheduledThreadPool = Executors.newScheduledThreadPool(1, BridgeThreadFactory)
     val registry = config.registry.getOrElse(CollectorRegistry.defaultRegistry)
-    val pusher = new DatadogPush(client)
+    val pusher = new DatadogPush(client, registry)
     new DatadogBridge(scheduledThreadPool, config.period, registry, pusher)
   }
 }
@@ -44,7 +44,7 @@ class DatadogBridge private[datadog] (scheduledThreadPool: ScheduledExecutorServ
 
   private val pushTask = new Runnable {
     def run(): Unit = {
-      pusher.push(registry)
+      pusher.push()
     }
   }
 
