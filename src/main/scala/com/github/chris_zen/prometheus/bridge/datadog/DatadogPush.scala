@@ -1,8 +1,5 @@
 package com.github.chris_zen.prometheus.bridge.datadog
 
-import java.util.concurrent.Executors
-
-import com.github.chris_zen.prometheus.bridge.datadog.DatadogBridge.BridgeThreadFactory
 import com.timgroup.statsd.{NonBlockingStatsDClient, StatsDClient}
 import io.prometheus.client.Collector.{MetricFamilySamples, Type}
 import io.prometheus.client.CollectorRegistry

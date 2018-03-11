@@ -7,7 +7,7 @@ import scala.annotation.tailrec
 trait StatsDFixtures {
   class LocalStatsDServer {
     private val BufferSize = 1024
-    private val TimeoutMillis = 100
+    private val TimeoutMillis = 1500
 
     private val buf = new Array[Byte](BufferSize)
 
@@ -33,7 +33,7 @@ trait StatsDFixtures {
     def receiveAll: List[String] = {
       @tailrec def rec(list: List[String]): List[String] = receive match {
         case msg if msg.isEmpty => list
-        case msg if msg.nonEmpty => rec(list :+ msg)
+        case msg if msg.nonEmpty => rec(list ++ msg.split("\n"))
       }
       rec(List.empty)
     }
