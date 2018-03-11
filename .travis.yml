@@ -26,7 +26,7 @@ before_install:
   fi
 
 script:
-  - "sbt ++$TRAVIS_SCALA_VERSION clean scalastyle test:scalastyle coverage test coverageReport"
+  - "sbt ++$TRAVIS_SCALA_VERSION clean scalastyle test:scalastyle coverage test it:test coverageReport"
 
 after_success:
 - if [ $TRAVIS_PULL_REQUEST = 'false' ]; then sbt ++$TRAVIS_SCALA_VERSION releaseEarly;
