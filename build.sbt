@@ -11,12 +11,13 @@ inThisBuild(List(
   // These are the sbt-release-early settings to configure
   pgpPublicRing := file("./travis/local.pubring.asc"),
   pgpSecretRing := file("./travis/local.secring.asc"),
-  releaseEarlyWith := BintrayPublisher
+  releaseEarlyWith := BintrayPublisher,
+
+  scalaVersion := "2.12.4",
+  crossScalaVersions := Seq("2.10.7", "2.11.12", "2.12.4")
 ))
 
 lazy val defaultSettings = Defaults.coreDefaultSettings ++ Seq(
-  scalaVersion := "2.12.4",
-
   libraryDependencies ++= Seq(
     "org.slf4j" % "slf4j-api" % "1.7.25",
     "org.slf4j" % "slf4j-log4j12" % "1.7.25" % Test,
