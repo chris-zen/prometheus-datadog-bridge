@@ -10,7 +10,7 @@ object DatadogPush {
 
   private val logger: Logger = LoggerFactory.getLogger(this.getClass.getName.replace("$", ""))
 
-  def apply(config: DatadogBridge.Config): DatadogPush = {
+  def apply(config: DatadogBridgeConfig): DatadogPush = {
     val client = new NonBlockingStatsDClient(config.prefix, config.host, config.port, config.tags: _*)
     val registry = config.registry.getOrElse(CollectorRegistry.defaultRegistry)
     new DatadogPush(client, registry)
@@ -30,7 +30,7 @@ class DatadogPush private[datadog] (client: StatsDClient,
     client.close()
   }
 
-  def push(): Unit = {
+  def push(): DatadogPush = {
 
     val unsupportedMetricTypes = for {
       metricFamilySamples    <- registry.metricFamilySamples().asScala.toList
@@ -43,6 +43,8 @@ class DatadogPush private[datadog] (client: StatsDClient,
       logger.error(s"Found samples for unsupported metric type for metric" +
         s" '$name' with type '$metricType'")
     }
+
+    this
   }
 
   private def reportSample(metricType: Type,

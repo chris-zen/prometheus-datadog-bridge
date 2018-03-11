@@ -12,23 +12,11 @@ object DatadogBridge {
 
   private val logger: Logger = LoggerFactory.getLogger(this.getClass.getName.replace("$", ""))
 
-  private val DefaultDatadogHost = "localhost"
-  private val DefaultDatadogPort = 8125
-  private val DefaultDatadogPrefix = ""
-  private val DefaultPeriod = Duration.ofMinutes(1)
-
-  case class Config(host: String = DefaultDatadogHost,
-                    port: Int = DefaultDatadogPort,
-                    prefix: String = DefaultDatadogPrefix,
-                    tags: Seq[String] = Seq.empty,
-                    period: Duration = DefaultPeriod,
-                    registry: Option[CollectorRegistry] = None)
-
   private val BridgeThreadFactory = new ThreadFactory {
     def newThread(r: Runnable): Thread = new Thread(r, "prometheus-datadog-bridge")
   }
 
-  def apply(config: Config): DatadogBridge = {
+  def apply(config: DatadogBridgeConfig): DatadogBridge = {
     val client = new NonBlockingStatsDClient(config.prefix, config.host, config.port, config.tags: _*)
     val scheduledThreadPool = Executors.newScheduledThreadPool(1, BridgeThreadFactory)
     val registry = config.registry.getOrElse(CollectorRegistry.defaultRegistry)

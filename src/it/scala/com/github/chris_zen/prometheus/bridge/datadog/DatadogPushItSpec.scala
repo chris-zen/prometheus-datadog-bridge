@@ -13,9 +13,9 @@ class DatadogPushItSpec extends FlatSpec with Matchers with StatsDFixtures {
       Counter.build("metric2", "help2").labelNames("l1", "l2").register(registry).labels("v1", "v2").inc(2.0)
       Counter.build("metric1", "help2").register(registry).inc(3.0)
 
-      val config = DatadogBridge.Config(host = "localhost", port = statsD.port,
-                                        prefix = "prefix", tags = List("l0:v0"),
-                                        registry = Some(registry))
+      val config = DatadogBridgeConfig(host = "localhost", port = statsD.port,
+                                       prefix = "prefix", tags = List("l0:v0"),
+                                       registry = Some(registry))
       val pusher = DatadogPush(config)
 
       pusher.push()
@@ -28,7 +28,7 @@ class DatadogPushItSpec extends FlatSpec with Matchers with StatsDFixtures {
   }
 
   it should "use the default collector" in {
-    val config = DatadogBridge.Config()
+    val config = DatadogBridgeConfig()
     val pusher = DatadogPush(config)
     pusher.registry shouldBe CollectorRegistry.defaultRegistry
   }
