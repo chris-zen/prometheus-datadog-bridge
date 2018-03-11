@@ -10,7 +10,7 @@ import org.slf4j.{Logger, LoggerFactory}
 
 object DatadogBridge {
 
-  private val logger: Logger = LoggerFactory.getLogger(getClass.getName.split("[$.]").last)
+  private val logger: Logger = LoggerFactory.getLogger(this.getClass.getName.replace("$", ""))
 
   private val DefaultDatadogHost = "localhost"
   private val DefaultDatadogPort = 8125

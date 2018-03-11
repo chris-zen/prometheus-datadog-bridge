@@ -8,7 +8,7 @@ import org.slf4j.{Logger, LoggerFactory}
 
 object DatadogPush {
 
-  private val logger: Logger = LoggerFactory.getLogger(this.getClass.getSimpleName)
+  private val logger: Logger = LoggerFactory.getLogger(this.getClass.getName.replace("$", ""))
 
   def apply(config: DatadogBridge.Config): DatadogPush = {
     val client = new NonBlockingStatsDClient(config.prefix, config.host, config.port, config.tags: _*)
@@ -51,12 +51,21 @@ class DatadogPush private[datadog] (client: StatsDClient,
 
     val tags = labelsAsTags(sample)
 
-    println((metricType, metricName, sample.name, sample.labelNames, sample.labelValues, sample.value))
+    if (logger.isTraceEnabled) {
+      logger.trace("{}: [{}] {}={} ({}/{})",
+        metricType.toString, metricName, sample.name, sample.value.toString,
+        sample.labelNames.toString, sample.labelValues.toString)
+    }
 
     metricType match {
-      case Type.GAUGE => Right(client.gauge(sample.name, sample.value, tags: _*))
-      case Type.COUNTER => Right(client.count(sample.name, sample.value, tags: _*))
-      case _ => Left(UnsupportedMetricType(metricType.toString, metricName))
+      case Type.GAUGE | Type.SUMMARY | Type.HISTOGRAM =>
+        Right(client.gauge(sample.name, sample.value, tags: _*))
+
+      case Type.COUNTER =>
+        Right(client.count(sample.name, sample.value, tags: _*))
+
+      case _ =>
+        Left(UnsupportedMetricType(metricType.toString, metricName))
     }
   }
 
