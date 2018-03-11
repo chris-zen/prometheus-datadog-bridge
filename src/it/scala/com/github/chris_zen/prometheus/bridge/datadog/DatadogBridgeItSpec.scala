@@ -42,6 +42,12 @@ class DatadogBridgeItSpec extends FlatSpec with Matchers with StatsDFixtures {
       bridge.stop()
     }
   }
+
+  it should "use the default collector" in {
+    val config = DatadogBridge.Config()
+    val bridge = DatadogBridge(config)
+    bridge.registry shouldBe CollectorRegistry.defaultRegistry
+  }
 }
 
 object DatadogBridgeItSpec {

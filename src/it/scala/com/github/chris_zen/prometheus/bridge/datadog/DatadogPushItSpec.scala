@@ -26,6 +26,12 @@ class DatadogPushItSpec extends FlatSpec with Matchers with StatsDFixtures {
                                            "prefix.metric1:3|c|#l0:v0")
     }
   }
+
+  it should "use the default collector" in {
+    val config = DatadogBridge.Config()
+    val pusher = DatadogPush(config)
+    pusher.registry shouldBe CollectorRegistry.defaultRegistry
+  }
 }
 
 object DatadogPushItSpec {

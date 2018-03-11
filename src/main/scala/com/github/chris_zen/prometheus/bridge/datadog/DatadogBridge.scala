@@ -39,7 +39,7 @@ object DatadogBridge {
 
 class DatadogBridge private[datadog] (scheduledThreadPool: ScheduledExecutorService,
                                       period: Duration,
-                                      registry: CollectorRegistry,
+                                      private[datadog] val registry: CollectorRegistry,
                                       pusher: DatadogPush) {
 
   private val pushTask = new Runnable {

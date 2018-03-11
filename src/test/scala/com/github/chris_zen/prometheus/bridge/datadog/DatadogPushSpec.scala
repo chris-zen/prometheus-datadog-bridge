@@ -1,10 +1,14 @@
 package com.github.chris_zen.prometheus.bridge.datadog
 
+import java.util
+
 import com.timgroup.statsd.StatsDClient
+import io.prometheus.client.Collector.MetricFamilySamples.Sample
+import io.prometheus.client.Collector.{MetricFamilySamples, Type}
 import io.prometheus.client._
+import org.mockito.Mockito.{verify, verifyNoMoreInteractions}
 import org.scalatest.mockito.MockitoSugar
 import org.scalatest.{FlatSpec, Matchers}
-import org.mockito.Mockito.{verify, verifyNoMoreInteractions}
 
 class DatadogPushSpec extends FlatSpec with Matchers with DatadogPushFixtures {
 
@@ -68,9 +72,28 @@ class DatadogPushSpec extends FlatSpec with Matchers with DatadogPushFixtures {
       verifyNoMoreInteractions(client)
     }
   }
+
+  it should "ignore unsupported metric types" in {
+    withDatadogPush { (registry, pusher, client) =>
+      new UnsupportedCollector().register(registry)
+      pusher.push()
+      verifyNoMoreInteractions(client)
+    }
+  }
 }
 
 trait DatadogPushFixtures extends MockitoSugar {
+
+  class UnsupportedCollector extends Collector {
+    override def collect(): util.List[MetricFamilySamples] = {
+      val mfs = new util.ArrayList[MetricFamilySamples]()
+      val samples = new util.ArrayList[Sample]()
+      samples.add(new Sample("test", util.Collections.emptyList(), util.Collections.emptyList(), 0.0, 0L))
+      mfs.add(new MetricFamilySamples("test", Type.UNTYPED, "help", samples))
+      mfs
+    }
+  }
+
   def withDatadogPush(test: (CollectorRegistry, DatadogPush, StatsDClient) => Any): Any = {
     val registry = new CollectorRegistry()
     val client = mock[StatsDClient]

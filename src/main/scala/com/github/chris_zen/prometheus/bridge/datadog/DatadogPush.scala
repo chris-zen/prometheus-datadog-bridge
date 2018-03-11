@@ -18,7 +18,7 @@ object DatadogPush {
 }
 
 class DatadogPush private[datadog] (client: StatsDClient,
-                                    registry: CollectorRegistry) {
+                                    private[datadog] val registry: CollectorRegistry) {
 
   import DatadogPush.logger
 
