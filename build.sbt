@@ -5,12 +5,13 @@ inThisBuild(List(
 
   licenses := Seq("MIT" -> url("http://opensource.org/licenses/MIT")),
   homepage := Some(url(s"https://github.com/chris-zen/${name.value}")),
+  developers := List(Developer("chris-zen", "Christian Perez-Llamas", "chrispz@gmail.com", url("http://chris-zen.github.io/"))),
   scmInfo := Some(ScmInfo(url(s"https://github.com/chris-zen/${name.value}"), s"scm:git:git@github.com:chris-zen/${name.value}.git")),
 
   // These are the sbt-release-early settings to configure
   pgpPublicRing := file("./travis/local.pubring.asc"),
   pgpSecretRing := file("./travis/local.secring.asc"),
-  releaseEarlyWith := SonatypePublisher
+  releaseEarlyWith := BintrayPublisher
 ))
 
 lazy val defaultSettings = Defaults.coreDefaultSettings ++ Seq(
