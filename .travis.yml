@@ -29,7 +29,6 @@ script:
   - "sbt ++$TRAVIS_SCALA_VERSION clean scalastyle test:scalastyle coverage test it:test coverageReport"
 
 after_success:
-- sbt coveralls
 - bash <(curl -s https://codecov.io/bash)
 - if [ $TRAVIS_PULL_REQUEST = 'false' ]; then sbt ++$TRAVIS_SCALA_VERSION releaseEarly;
   fi
