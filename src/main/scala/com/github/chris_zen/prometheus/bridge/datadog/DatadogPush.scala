@@ -36,7 +36,11 @@ class DatadogPush private[datadog] (client: StatsDClient,
       metricFamilySamples    <- registry.metricFamilySamples().asScala.toList
       metricName              = metricFamilySamples.name.replace(':', '.')
       sample                 <- metricFamilySamples.samples.asScala
-      unsupportedMetricType  <- reportSample(metricFamilySamples.`type`, metricName, sample).left.toOption
+      sampleName              = sample.name.replace(':', '.')
+      sampleValue             = sample.value
+      sampleLabels            = sample.labelNames.asScala.zip(sample.labelValues.asScala)
+      unsupportedMetricType  <- reportSample(metricFamilySamples.`type`, metricName,
+                                             sampleName, sampleValue, sampleLabels).left.toOption
     } yield unsupportedMetricType
 
     for (UnsupportedMetricType(metricType, name) <- unsupportedMetricTypes.toSet) {
@@ -49,30 +53,31 @@ class DatadogPush private[datadog] (client: StatsDClient,
 
   private def reportSample(metricType: Type,
                            metricName: String,
-                           sample: MetricFamilySamples.Sample): Either[UnsupportedMetricType, Unit] = {
+                           sampleName: String,
+                           sampleValue: Double,
+                           sampleLabels: Seq[(String, String)]): Either[UnsupportedMetricType, Unit] = {
 
-    val tags = labelsAsTags(sample)
+    val tags = labelsAsTags(sampleLabels)
 
     if (logger.isTraceEnabled) {
-      logger.trace("{}: [{}] {}={} ({}/{})",
-        metricType.toString, metricName, sample.name, sample.value.toString,
-        sample.labelNames.toString, sample.labelValues.toString)
+      logger.trace("{}: [{}] {}={} ({})",
+        metricType.toString, metricName, sampleName, sampleValue.toString, tags.mkString(","))
     }
 
     metricType match {
       case Type.GAUGE | Type.SUMMARY | Type.HISTOGRAM =>
-        Right(client.gauge(sample.name, sample.value, tags: _*))
+        Right(client.gauge(sampleName, sampleValue, tags: _*))
 
       case Type.COUNTER =>
-        Right(client.count(sample.name, sample.value, tags: _*))
+        Right(client.count(sampleName, sampleValue, tags: _*))
 
       case _ =>
         Left(UnsupportedMetricType(metricType.toString, metricName))
     }
   }
 
-  private def labelsAsTags(sample: MetricFamilySamples.Sample): Seq[String] = {
-    sample.labelNames.asScala.zip(sample.labelValues.asScala).map {
+  private def labelsAsTags(sampleLabels: Seq[(String, String)]): Seq[String] = {
+    sampleLabels.map {
       case (name, value) if value == null => name
       case (name, value) if value != null => s"$name:$value"
     }

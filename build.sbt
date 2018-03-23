@@ -1,5 +1,5 @@
 
-inThisBuild(List(
+inThisBuild(Seq(
   name := "prometheus-datadog-bridge",
   organization := "com.github.chris_zen",
 
@@ -28,6 +28,7 @@ lazy val root = Project(id = "prometheus-datadog-bridge", base = file("."))
   .configs(IntegrationTest)
   .settings(itSettings)
   .settings(
+    parallelExecution in Test := false,
     libraryDependencies ++= Seq(
       "org.slf4j" % "slf4j-api" % "1.7.25",
       "io.prometheus" % "simpleclient" % "0.3.0",
