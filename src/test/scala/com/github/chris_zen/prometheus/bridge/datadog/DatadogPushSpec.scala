@@ -80,6 +80,15 @@ class DatadogPushSpec extends FlatSpec with Matchers with DatadogPushFixtures {
       verifyNoMoreInteractions(client)
     }
   }
+
+  it should "translate colons in names into dots" in {
+    withDatadogPush { (registry, pusher, client) =>
+      Gauge.build("prefix:metric1", "help1").register(registry).set(1.0)
+      pusher.push()
+      verify(client).gauge("prefix.metric1", 1.0)
+      verifyNoMoreInteractions(client)
+    }
+  }
 }
 
 trait DatadogPushFixtures extends MockitoSugar {
