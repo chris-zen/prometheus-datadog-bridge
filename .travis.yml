@@ -26,7 +26,7 @@ before_install:
   fi
 
 script:
-  - "sbt ++$TRAVIS_SCALA_VERSION clean scalastyle test:scalastyle coverage test it:test coverageReport"
+  - "sbt ++$TRAVIS_SCALA_VERSION clean scalastyle test:scalastyle it:scalastyle coverage test it:test coverageReport"
 
 after_success:
 - bash <(curl -s https://codecov.io/bash)
