@@ -12,6 +12,7 @@ inThisBuild(Seq(
   pgpPublicRing := file("./travis/local.pubring.asc"),
   pgpSecretRing := file("./travis/local.secring.asc"),
   releaseEarlyWith := BintrayPublisher,
+  releaseEarlyEnableSyncToMaven := false,
 
   scalaVersion := "2.12.4",
   crossScalaVersions := Seq("2.10.7", "2.11.12", "2.12.4")
