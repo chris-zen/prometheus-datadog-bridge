@@ -42,6 +42,20 @@ class DatadogPushSpec extends FlatSpec with Matchers with DatadogPushFixtures {
     }
   }
 
+  it should "push metrics from a counter as deltas" in {
+    withDatadogPush { (registry, pusher, client) =>
+      val metric1 = Counter.build("metric1", "help2").register(registry)
+      metric1.inc(1.0)
+      pusher.push()
+      verify(client).count("metric1", 1.0)
+      verifyNoMoreInteractions(client)
+      metric1.inc(4.0)
+      pusher.push()
+      verify(client).count("metric1", 4.0)
+      verifyNoMoreInteractions(client)
+    }
+  }
+
   it should "push metrics from a summary" in {
     withDatadogPush { (registry, pusher, client) =>
       val summary = Summary.build("metric1", "help1").quantile(0.50, 0.05).labelNames("l1").register(registry)

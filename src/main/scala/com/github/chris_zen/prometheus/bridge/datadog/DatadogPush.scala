@@ -5,6 +5,8 @@ import io.prometheus.client.Collector.{MetricFamilySamples, Type}
 import io.prometheus.client.CollectorRegistry
 import org.slf4j.{Logger, LoggerFactory}
 
+import scala.collection.mutable
+
 
 object DatadogPush {
 
@@ -25,6 +27,8 @@ class DatadogPush private[datadog] (client: StatsDClient,
   import collection.JavaConverters._
 
   private case class UnsupportedMetricType(metricType: String, name: String)
+
+  private val counterPreviousValues: mutable.Map[Seq[(String, String)], Double] = mutable.Map.empty
 
   def close(): Unit = {
     client.close()
@@ -69,7 +73,11 @@ class DatadogPush private[datadog] (client: StatsDClient,
         Right(client.gauge(sampleName, sampleValue, tags: _*))
 
       case Type.COUNTER =>
-        Right(client.count(sampleName, sampleValue, tags: _*))
+        val key = (metricName, sampleName) +: sampleLabels
+        val prevValue = counterPreviousValues.getOrElse(key, 0.0)
+        counterPreviousValues += key -> sampleValue
+        val delta = sampleValue - prevValue
+        Right(client.count(sampleName, delta, tags: _*))
 
       case _ =>
         Left(UnsupportedMetricType(metricType.toString, metricName))
