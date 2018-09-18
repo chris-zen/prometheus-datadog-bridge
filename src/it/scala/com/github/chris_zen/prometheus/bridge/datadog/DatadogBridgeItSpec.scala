@@ -31,13 +31,13 @@ class DatadogBridgeItSpec extends FlatSpec with Matchers with StatsDFixtures {
 
       Thread.sleep(PeriodMillis)
 
-      statsD.receive shouldBe "prefix.metric2:2|c|#l0:v0,l2:v2,l1:v1"
+      statsD.receive shouldBe "prefix.metric2:1|c|#l0:v0,l2:v2,l1:v1"
 
       counter.labels("v1", "v2").inc(1.0)
 
       Thread.sleep(PeriodMillis)
 
-      statsD.receive shouldBe "prefix.metric2:3|c|#l0:v0,l2:v2,l1:v1"
+      statsD.receive shouldBe "prefix.metric2:1|c|#l0:v0,l2:v2,l1:v1"
 
       bridge.stop()
     }
