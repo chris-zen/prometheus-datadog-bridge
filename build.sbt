@@ -32,7 +32,7 @@ lazy val root = Project(id = "prometheus-datadog-bridge", base = file("."))
     parallelExecution in Test := false,
     libraryDependencies ++= Seq(
       "org.slf4j" % "slf4j-api" % "1.7.25",
-      "io.prometheus" % "simpleclient" % "0.3.0",
+      "io.prometheus" % "simpleclient" % "0.6.0",
       "com.datadoghq" % "java-dogstatsd-client" % "2.5",
 
       "org.slf4j" % "slf4j-log4j12" % "1.7.25" % Test,
