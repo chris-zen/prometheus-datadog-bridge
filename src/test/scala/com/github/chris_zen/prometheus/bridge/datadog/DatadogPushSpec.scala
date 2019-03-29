@@ -103,6 +103,14 @@ class DatadogPushSpec extends FlatSpec with Matchers with DatadogPushFixtures {
       verifyNoMoreInteractions(client)
     }
   }
+
+  it should "ignore metrics with a NaN value" in {
+    withDatadogPush { (registry, pusher, client) =>
+      Gauge.build("prefix:metric1", "help1").register(registry).set(Double.NaN)
+      pusher.push()
+      verifyNoMoreInteractions(client)
+    }
+  }
 }
 
 trait DatadogPushFixtures extends MockitoSugar {

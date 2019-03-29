@@ -61,26 +61,32 @@ class DatadogPush private[datadog] (client: StatsDClient,
                            sampleValue: Double,
                            sampleLabels: Seq[(String, String)]): Either[UnsupportedMetricType, Unit] = {
 
-    val tags = labelsAsTags(sampleLabels)
-
-    if (logger.isTraceEnabled) {
-      logger.trace("{}: [{}] {}={} ({})",
-        metricType.toString, metricName, sampleName, sampleValue.toString, tags.mkString(","))
+    if (sampleValue.isNaN) {
+      // Old versions of DatadogD doesn't handle NaN's according to specs and die
+      Right(())
     }
+    else {
+      val tags = labelsAsTags(sampleLabels)
 
-    metricType match {
-      case Type.GAUGE | Type.SUMMARY | Type.HISTOGRAM =>
-        Right(client.gauge(sampleName, sampleValue, tags: _*))
+      if (logger.isTraceEnabled) {
+        logger.trace("{}: [{}] {}={} ({})",
+          metricType.toString, metricName, sampleName, sampleValue.toString, tags.mkString(","))
+      }
 
-      case Type.COUNTER =>
-        val key = (metricName, sampleName) +: sampleLabels
-        val prevValue = counterPreviousValues.getOrElse(key, 0.0)
-        counterPreviousValues += key -> sampleValue
-        val delta = sampleValue - prevValue
-        Right(client.count(sampleName, delta, tags: _*))
+      metricType match {
+        case Type.GAUGE | Type.SUMMARY | Type.HISTOGRAM =>
+          Right(client.gauge(sampleName, sampleValue, tags: _*))
 
-      case _ =>
-        Left(UnsupportedMetricType(metricType.toString, metricName))
+        case Type.COUNTER =>
+          val key = (metricName, sampleName) +: sampleLabels
+          val prevValue = counterPreviousValues.getOrElse(key, 0.0)
+          counterPreviousValues += key -> sampleValue
+          val delta = sampleValue - prevValue
+          Right(client.count(sampleName, delta, tags: _*))
+
+        case _ =>
+          Left(UnsupportedMetricType(metricType.toString, metricName))
+      }
     }
   }
 
