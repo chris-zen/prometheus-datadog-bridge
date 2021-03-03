@@ -14,8 +14,8 @@ inThisBuild(Seq(
   releaseEarlyWith := SonatypePublisher,
   releaseEarlyEnableSyncToMaven := true,
 
-  scalaVersion := "2.12.13",
-  crossScalaVersions := Seq("2.10.7", "2.11.12", "2.12.13")
+  scalaVersion := "2.12.12",
+  crossScalaVersions := Seq("2.10.7", "2.11.12", "2.12.12")
 ))
 
 lazy val IntegrationTest = config("it") extend Test
@@ -37,6 +37,6 @@ lazy val root = Project(id = "prometheus-datadog-bridge", base = file("."))
 
       "org.slf4j" % "slf4j-log4j12" % "1.7.25" % Test,
       "org.scalatest" %% "scalatest" % "3.0.4" % Test,
-      "org.mockito" % "mockito-core" % "2.12.0" % Test,
+      "org.mockito" % "mockito-core" % "3.3.3" % Test,
     )
   )
