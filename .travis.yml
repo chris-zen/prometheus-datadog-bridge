@@ -7,7 +7,7 @@ scala:
   - "2.11.12"
   - "2.12.13"
 
-jdk: "oraclejdk8"
+jdk: "oraclejdk11"
 
 cache:
   directories:
