@@ -5,9 +5,9 @@ language: scala
 scala:
   - "2.10.7"
   - "2.11.12"
-  - "2.12.4"
+  - "2.12.12"
 
-jdk: "oraclejdk8"
+jdk: "oraclejdk11"
 
 cache:
   directories:
@@ -19,22 +19,29 @@ before_cache:
   - find $HOME/.ivy2/cache -name "ivydata-*.properties" -print -delete
   - find $HOME/.sbt        -name "*.lock"               -print -delete
 
-before_install:
-- if [ $TRAVIS_PULL_REQUEST = 'false' ]; then
-  openssl aes-256-cbc -K $encrypted_778c1fd0666a_key -iv $encrypted_778c1fd0666a_iv -in travis/secrets.tar.enc -out travis/local.secrets.tar -d;
-  tar xv -C travis -f travis/local.secrets.tar;
-  fi
-
 script:
   - "sbt ++$TRAVIS_SCALA_VERSION clean scalastyle test:scalastyle it:scalastyle coverage test it:test coverageReport"
 
 after_success:
-- bash <(curl -s https://codecov.io/bash)
-- if [ $TRAVIS_PULL_REQUEST = 'false' ]; then sbt ++$TRAVIS_SCALA_VERSION releaseEarly;
-  fi
+  - bash <(curl -s https://codecov.io/bash)
+
+before_deploy:
+  - if [ $TRAVIS_PULL_REQUEST = 'false' ]; then
+      openssl aes-256-cbc -K $encrypted_c6e4beb91ce9_key -iv $encrypted_c6e4beb91ce9_iv -in travis/secring.asc.enc -out travis/local.secring.asc -d;
+      gpg --import travis/local.secring.asc;
+      rm travis/local.secring.asc;
+    fi
+
+deploy:
+  - provider: script
+    skip_cleanup: true
+    script: sbt ++$TRAVIS_SCALA_VERSION publishSigned sonatypeBundleRelease
+    on:
+      condition: $TRAVIS_PULL_REQUEST = 'false'
+      all_branches: true
 
 env:
   global:
-  - secure: CttHGMxYcittdkKlvFfPV6h/BOcwOZhHO91yqAj8ukqVBd+62PUJzplJ0OOeBd6ODa/xvNd2HnWoy5ouSqyyZPzM+2eUr4FIVC3dyD/QJq9UVFpkCqgWHrVuO5pmm8rFDUtY5F4v37MFL9RSHzgZ0RtLDFLeal/YBY874Di/wkC7899POiJAeKrCpnUAg2+N4SfKBbP38vydb11TMXOUIZ2HXzRCDjvNdOAEPnWfpM//6J4FLCrxdgexT1cp803nuWX7DBc+l0apI377s3CUhXPburYt8V8NRXo7sR6KvLXkjA7DXxJiqH4rs4xfvFJbZ+L/9uT/gvwGyzK2qEOOu/4qqEaIVX5zYXYu/fhH/UIVefazZ3ZM91lMVlYFeY/9AbZ1/7xVWJvZWkds6u3WIqZJRGKHfkAfAoQhJmv+neSz3lE6P2t732vkIXIjyCh+gF9n1EuZjpUZwzbs/zfwv061bVVxa3V5ZvK0gfq2DB6FG+YRe89EBY4mwrRVlpMo9iOswhUz1ZHEgkR6AVjLwsS3SPzuGuIBVJP9uRbZA+OVKuzmrYijU6WmdKWN7bOmSPuT5rklNU2y9BuC63gD0Tku8Sc+yZVfYK/k+PSL4fHaaarZgeOpLShj4dOPp8jYGP79p5gyb7doK156fPVBNgtYrG2RGrLeGfK5Dl+boeA=
-  - secure: iUAO8r8VMcXjeAdBuldgW31xluq0DvFv50Qs2UuD3gTFm7iRkEo4uoV/+PRz637rlvfJhbe+qmlPSvLQFVkVw8h2GniXm22LfYeNI95k/uybBtwdk4ExseSvA4eFEPVrSwhrspLKGWZiP4oZu8k3oWroCPgjzSnTTp5JS50M0UF9CjN9KJJGqapA04r82j12DMdZwGW63BdNwotXf0uJ7D1uF41K5Ubd+G/I1HlseWVZFKV9smcQe8dKGV+VdzHXt7VCZanak1HNNZAgPGVVkqm2WOzEdLK9mlVyQ81Rn7/1F2o8QciKdL2gVgs/l/2KF9wqRbGazS6lhfm9yt6YH8PYhSDx/ytB7WEDjAmT62342tragfPioiaHVOH48ctnMVTdnRgoFeRrQCCWzHvS42FYhQ5m8ATMD0T++kwkQjalRzm2BM44LvCa1/MaCc6YoNEvuOxZ5zUxmguUq5zifXYNNJCHZLxfBDMc08/KZ2oAsYtuoqGEKs+pcWlmHcjGAnHHI8iCbigSJtHEz0Apj825w3ySXfTfzo8SKGwT4SiHmFHvzceQ058JrxZkLi4tFK0GHBPoDLfNTvNhnvVq83r+xyrve0TtPrGPAoQ0gw5uR5H29jFI6FCAFb5qrGqQiZmQWnK99i7ZfcRBKGPFAz5F4YXe/7X2DG0mIdBtefs=
-  - secure: MARhx+/MCg133VsgV7zccP0ioOK36vg26PxKghIMQVGRu2tKFlFuncRdYCjMBVKhAfGb47dy81p7JljAzeO2bQv+xuRi3B6RvwvpRXBv8Ra9KEQ290HI7FDSeoCRJ8SXeM+54/fET9VNF+DDEBjIhKt12O00yqC4WBpCoPYdMtny08I91nTqtcR/iao4LU0VQuj1yliVsyWDkKagpVtBGLVghTEOL8bQ6r/kzPKXoKV5Q2TMXWLNq9KoTBUupvlEjT0QDUjL6WfR8P3dXbiq47VTij0jNAQlM8dCngBNOcFl1uBsN+K3SxrbtcbAmJ+IDu1muyXEG9vtSUXsMvP8KrvJzMLQWf5opmSo9RJbxcunO/lBr4mRebOyOSkOZ5cGHOgOMUJ89lYSprTwHJ+/VPNLghPJDnlStJ7294Oj/Vapeop4g6Q5nneRMNxOUbCV0F+Ul1WaGRyxK0+rL2dQtfvY08UfjILBQPebsjSAusaZ19n/e4HXhRqaWTV2dJhLMxqpyAn60Ri1Bqb5jnGTgDgK5fu/2R9Vj/EX+380D7x7uXYXxuQccAwzkW4LRX1qkbypCM42rzem1CCNAJB+RwbdXzGzAZRy8OttJgkFUwOUWRRuk7zDIaZNydpeQJu80u0V+PxUaR9QZO6b0FYvuAGtd86SeQceJWxc9yCP+C8=
+    - secure: "Uei/fMutTEtgMXd5/HWb2lpevw9MTwOwviGC8bdSRjlh9t3AkvIHoAl/mboIqhlzkjbDsmOIUvht8vs3BO+VH8uk0uZDQ+fqMMyW0lR+jBkxdARnivz1nxOVmk9NOvSAdSdugzzIoc9aTqKJltBZFFKG7UrqpbXlH0wjWAfLTVIwQ9Wl0jd/wIE2cr/gBARuzR+Ot53EhkuqS3lPtN0jbYEraK1aMIpFKTjb0sNQYnxwJMb6tOLQHF/nSd7BQ9ggn6J5u/380mAZRQopaiA48qlC2WZ1YOpZF81IVM0Ymjw/lDH50GdYCpNg6Xs01GcdVvYUO9N7oXIiFR8w0h39iaoPGMVAz3glJK6HI07614m5OhpakCAhmzqqQXUd7pO55l/Ha0k/YwqVzcKf01DsF64wiCcooE+jP6+P+zFQyrgnLT89tvzE4wslGlbn+0koy5XbJk+/OATvfeJERaXpIgfqcFefp79/UrXFMZpfmF2jIN7JN6Vb9X4AUxxAJX5/McUggshCuskLEfOzTJ6Hn83aF+/M6XdVti9LHG3gZDrgY9Bu6YVyRgkdTX8B43HJ/lQwu5K4J5bpN9feaLIa89YPaY65zv0Q9SQtHEPKOvZsx6NhLYnKfdiMa7bmb5kO1L8ls7SZxJYNZuqDRXYtvqXrOouHUmEeCHr+hjz4MNs="
+    - SONATYPE_USERNAME=chris-zen
+    - secure: "hT9NY9ic7j1Cno8xtYwL07zZ3lR7hQwo/P/HA4ubJbjPV0ptg9blsJfS35sRP3X1eYN15628jQKgl3J7vwVhClHu3Wfnei6oRjPeH4HLzv0Zry79kX7MaECOckhph/TjDTPug/EUjc6cd4BqVY7Ddg4eZQNJS0Yj3PWooEGuqsCQigZKJ5COuMv36HbDKFo6tXpNUDeW4XZZUuK9rLojNUF3m4lMIg33yk67iEyOloj0+u1w7kboN6MfwMLtIbUQ3C4vfT/jlfXrbP3BxIODZx3SunAm11m1IJIGtl9589ppTzBpjjTdoPcb7+9T17M443yIF1/rmLiWBE40NRDIYPcu1+qwMg0YRQJCbwfRG+MsFI0AIBYiJgSgcMC4forNQF94D/SU60DkLPDtDjJ0rxRul39FdMjfhT3Q58m18qQByohpe68uP3A3MfLFpLO8SJKW2CCFizIGxUlq1cP/qQAM79r9tflDkPZVXc0jXG9F6A2LMDlEGUQnDBuT3kvi3gx/ayzj3EmcUMT4Eb+V6B1KkoOay8lqc1jpogiu7M6SyKU9jzInBCGIkc/jQ1X0cnCz1tXoeSYXYs3RIZz5IZGfpGBJOeJEZjjqIyfSIA7YrmqHcmKFhhMjq/7NkApxA9o4QneyALzQInkvmJZsr1xEckuI6g3MiXbmnBl6RGs="

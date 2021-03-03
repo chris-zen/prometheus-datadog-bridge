@@ -1,21 +1,18 @@
+import xerial.sbt.Sonatype._
 
 inThisBuild(Seq(
   name := "prometheus-datadog-bridge",
-  organization := "com.github.chris_zen",
+  organization := "io.github.chris-zen",
 
   licenses := Seq("MIT" -> url("http://opensource.org/licenses/MIT")),
   homepage := Some(url(s"https://github.com/chris-zen/${name.value}")),
   developers := List(Developer("chris-zen", "Christian Perez-Llamas", "chrispz@gmail.com", url("http://chris-zen.github.io/"))),
   scmInfo := Some(ScmInfo(url(s"https://github.com/chris-zen/${name.value}"), s"scm:git:git@github.com:chris-zen/${name.value}.git")),
 
-  // These are the sbt-release-early settings to configure
-  pgpPublicRing := file("./travis/local.pubring.asc"),
-  pgpSecretRing := file("./travis/local.secring.asc"),
-  releaseEarlyWith := BintrayPublisher,
-  releaseEarlyEnableSyncToMaven := false,
+  usePgpKeyHex("DEF7ED0AB86596A1FAF831EE034D4469B43F823B"),
 
-  scalaVersion := "2.12.4",
-  crossScalaVersions := Seq("2.10.7", "2.11.12", "2.12.4")
+  scalaVersion := "2.12.12",
+  crossScalaVersions := Seq("2.10.7", "2.11.12", "2.12.12")
 ))
 
 lazy val IntegrationTest = config("it") extend Test
@@ -29,6 +26,8 @@ lazy val root = Project(id = "prometheus-datadog-bridge", base = file("."))
   .configs(IntegrationTest)
   .settings(itSettings)
   .settings(
+    publishMavenStyle := true,
+    publishTo := sonatypePublishToBundle.value,
     parallelExecution in Test := false,
     libraryDependencies ++= Seq(
       "org.slf4j" % "slf4j-api" % "1.7.25",
@@ -37,6 +36,6 @@ lazy val root = Project(id = "prometheus-datadog-bridge", base = file("."))
 
       "org.slf4j" % "slf4j-log4j12" % "1.7.25" % Test,
       "org.scalatest" %% "scalatest" % "3.0.4" % Test,
-      "org.mockito" % "mockito-core" % "2.12.0" % Test,
+      "org.mockito" % "mockito-core" % "3.3.3" % Test,
     )
   )
