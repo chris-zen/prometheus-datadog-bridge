@@ -1,7 +1,7 @@
 
 inThisBuild(Seq(
   name := "prometheus-datadog-bridge",
-  organization := "com.github.chris_zen",
+  organization := "io.github.chris-zen",
 
   licenses := Seq("MIT" -> url("http://opensource.org/licenses/MIT")),
   homepage := Some(url(s"https://github.com/chris-zen/${name.value}")),
@@ -11,11 +11,11 @@ inThisBuild(Seq(
   // These are the sbt-release-early settings to configure
   pgpPublicRing := file("./travis/local.pubring.asc"),
   pgpSecretRing := file("./travis/local.secring.asc"),
-  releaseEarlyWith := BintrayPublisher,
-  releaseEarlyEnableSyncToMaven := false,
+  releaseEarlyWith := SonatypePublisher,
+  releaseEarlyEnableSyncToMaven := true,
 
-  scalaVersion := "2.12.4",
-  crossScalaVersions := Seq("2.10.7", "2.11.12", "2.12.4")
+  scalaVersion := "2.12.13",
+  crossScalaVersions := Seq("2.10.7", "2.11.12", "2.12.13")
 ))
 
 lazy val IntegrationTest = config("it") extend Test
