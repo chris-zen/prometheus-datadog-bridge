@@ -11,6 +11,10 @@ inThisBuild(Seq(
 
   usePgpKeyHex("DEF7ED0AB86596A1FAF831EE034D4469B43F823B"),
 
+  sonatypeRepository := "https://s01.oss.sonatype.org/service/local",
+  sonatypeCredentialHost:= "s01.oss.sonatype.org",
+  dynverSonatypeSnapshots := true,
+
   scalaVersion := "2.12.12",
   crossScalaVersions := Seq("2.10.7", "2.11.12", "2.12.12")
 ))
